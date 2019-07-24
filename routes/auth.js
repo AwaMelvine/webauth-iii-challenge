@@ -12,7 +12,7 @@ function createToken(user) {
     const payload = {
         id: user.id,
         username: user.username,
-        departments: user.departments
+        department: user.department
     };
     const options = {
         expiresIn: 1000 * 60 * 60 * 24
@@ -25,7 +25,7 @@ router.post('/register', async (req, res) => {
     try {
         let user = req.body;
 
-        if (!user.username || !user.password || !user.departments) {
+        if (!user.username || !user.password || !user.department) {
             return res.status(400).json({ message: "You must provide all user data" });
         }
 
@@ -61,21 +61,10 @@ router.post('/login', async (req, res) => {
 
 router.get('/users', authenticate, async (req, res) => {
     try {
-        const users = await User.get();
-        const { departments } = req.decoded;
+        const { department } = req.decoded;
+        const users = await User.usersInSameDepartment(department);
 
-        const options = {
-            shouldSort: true,
-            threshold: 0.6,
-            location: 0,
-            distance: 100,
-            maxPatternLength: 32,
-            minMatchCharLength: 1,
-            keys: ["departments"]
-        };
-        const fuse = new Fuse(users, options);
-        const groupedUsers = fuse.search(departments);
-        res.status(200).json({ data: groupedUsers });
+        res.status(200).json({ data: users });
     } catch (error) {
         console.log(error)
         res.status(500).json({ error: 'Failed to get users' });

@@ -9,6 +9,11 @@ module.exports = {
         return db("users");
     },
 
+    async usersInSameDepartment(department) {
+        const users = await db("users").where({ department });
+        return users;
+    },
+
     async findByUsername(username) {
         const user = await db("users").where({ username }).first();
         return user;
