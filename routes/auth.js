@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Fuse = require('fuse.js');
 const { authenticate } = require('../middleware/auth');
 const User = require('../models/User');
 const router = new Router();
@@ -11,6 +12,7 @@ function createToken(user) {
     const payload = {
         id: user.id,
         username: user.username,
+        departments: user.departments
     };
     const options = {
         expiresIn: 1000 * 60 * 60 * 24
@@ -60,8 +62,22 @@ router.post('/login', async (req, res) => {
 router.get('/users', authenticate, async (req, res) => {
     try {
         const users = await User.get();
-        res.status(401).json({ data: users });
+        const { departments } = req.decoded;
+
+        const options = {
+            shouldSort: true,
+            threshold: 0.6,
+            location: 0,
+            distance: 100,
+            maxPatternLength: 32,
+            minMatchCharLength: 1,
+            keys: ["departments"]
+        };
+        const fuse = new Fuse(users, options);
+        const groupedUsers = fuse.search(departments);
+        res.status(200).json({ data: groupedUsers });
     } catch (error) {
+        console.log(error)
         res.status(500).json({ error: 'Failed to get users' });
     }
 });
