@@ -1,7 +1,7 @@
 const db = require('../data/db');
 
 module.exports = {
-    get(id = null) {
+    async get(id = null) {
         if (id) {
             const user = await db("users").where({ id }).first();
             return user;

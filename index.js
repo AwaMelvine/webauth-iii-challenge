@@ -10,5 +10,5 @@ app.get('*', (req, res) => {
     res.status(404).json({ message: 'Page Not Found' });
 });
 
-const port = PORT || 5000;
+const port = process.env.PORT || 8080;
 app.listen(port, console.log(`Server running on localhost:${port}`));
